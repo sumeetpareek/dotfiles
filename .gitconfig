@@ -2,3 +2,7 @@
 	name = Sumeet Pareek
 	email = "(none)"
 
+[web]
+	browser = ff
+[browser "ff"]
+	cmd = open -a Firefox.app
