@@ -1,8 +1,17 @@
 [user]
-	name = Sumeet Pareek
-	email = "(none)"
+  name = Sumeet Pareek
+  email = "(none)"
 
 [web]
-	browser = ff
+  browser = ff
 [browser "ff"]
-	cmd = open -a Firefox.app
+  cmd = open -a Firefox.app
+
+[core]
+  editor = vi
+  excludesfile = ~/.gitignore
+[color]
+  branch = auto
+  diff = auto
+  interactive = auto
+  status = auto
