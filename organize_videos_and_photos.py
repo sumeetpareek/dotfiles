@@ -1,34 +1,69 @@
 import os
 import re
 import glob
-import datetime
-
+from datetime import datetime
+import errno
 
 # Configure full source and destination paths with trailing slash
 source_directory = '/Users/sumeetpareek/Movies/source_dump/'
 destination_directory = '/Users/sumeetpareek/Movies/organized_destination/'
 
+capture_device = "iphoneSE"
+
 # If the source has mp4 video files, iterate on them and print their year, month and date
-for full_video_path in glob.glob(source_directory + 'VID*mp4'):
-    video_filename = os.path.basename(full_video_path)
-    match = re.match("VID_([0-9]{8})_", video_filename)
-    
-    if (match):
-        date_time_obj = datetime.datetime.strptime(match.group(1), '%Y%m%d')
-        year_of_video = date_time_obj.strftime('%Y')
-        month_of_video = date_time_obj.strftime('%m') + '-' + date_time_obj.strftime('%B')
-        day_of_video = date_time_obj.strftime('%d') + '-' + date_time_obj.strftime('%A')
+# Default video filename patterns by devices
+# Android Pixel 3a = VID_20191013_113715.mp4
+# iOS iPhone SE = IMG_9198.MOV
+if capture_device is 'pixel3A':
+    for full_video_path in glob.glob(source_directory + 'VID*mp4'):
+        video_filename = os.path.basename(full_video_path)
+        match = re.match("VID_([0-9]{8})_", video_filename)
         
+        if (match):
+            date_time_obj = datetime.datetime.strptime(match.group(1), '%Y%m%d')
+            year_of_video = date_time_obj.strftime('%Y')
+            month_of_video = date_time_obj.strftime('%m') + '-' + date_time_obj.strftime('%B')
+            day_of_video = date_time_obj.strftime('%d') + '-' + date_time_obj.strftime('%A')
+            
+            if not os.path.isdir(destination_directory + year_of_video):
+                os.mkdir(destination_directory + year_of_video)
+            if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video):
+                os.mkdir(destination_directory + year_of_video + '/' + month_of_video)
+            if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video):
+                os.mkdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video)
+            
+            os.rename(full_video_path, destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video + '/' + video_filename)
+
+if capture_device is 'iphoneSE':
+    for full_video_path in glob.glob(source_directory + 'IMG_*MOV'):
+        video_filename = os.path.basename(full_video_path)
+        video_modified_time = datetime.fromtimestamp(os.path.getmtime(full_video_path))
+        year_of_video = video_modified_time.strftime('%Y')
+        month_of_video = video_modified_time.strftime('%m') + '-' + video_modified_time.strftime('%B')
+        day_of_video = video_modified_time.strftime('%d') + '-' + video_modified_time.strftime('%A')
+
         if not os.path.isdir(destination_directory + year_of_video):
             os.mkdir(destination_directory + year_of_video)
         if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video):
             os.mkdir(destination_directory + year_of_video + '/' + month_of_video)
         if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video):
             os.mkdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video)
-        
-        os.rename(full_video_path, destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video + '/' + video_filename)
 
+        newfilename = video_modified_time.strftime('%Y%m%d_%a_%H%M%S') + '_iphoneSE.MOV'
+        newfullpath = destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video + '/' + newfilename
+        os.rename(full_video_path, newfullpath)
+
+
+# HOW TO CREATE AN EMPTY FILE
+# ===========================       
+# try:
+#     os.close(os.open(newfullpath, os.O_CREAT|os.O_EXCL))
+# except OSError as exc:
+#     if exc.errno != errno.EEXIST:
+#         raise   
         
+
+# for full_video_path in glob.glob(source_directory + 'IMG*MOV'):
 
 # date_time_str = 'Jun 28 2018  7:40AM'
 # date_time_obj = datetime.datetime.strptime(date_time_str, '%b %d %Y %I:%M%p')
