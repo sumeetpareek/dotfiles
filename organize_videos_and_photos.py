@@ -5,19 +5,19 @@ from datetime import datetime
 import errno
 
 # Configure full source and destination paths with trailing slash
-source_directory = '/Users/sumeetpareek/Movies/greece-honeymoon/dump_of_iphoneSE/'
+source_directory = '/Users/sumeetpareek/Movies/greece-honeymoon/dump_of_pixel3A/'
 destination_directory = '/Users/sumeetpareek/Movies/greece-honeymoon/organized_photos/'
 
-capture_device = "iphoneSE"
+capture_device = 'pixel3A'
 
 # If the source has mp4 video files, iterate on them and print their year, month and date
 # Default video filename patterns by devices
 # Android Pixel 3a = VID_20191013_113715.mp4
 # iOS iPhone SE = IMG_9198.MOV
 if capture_device is 'pixel3A':
-    for full_video_path in glob.glob(source_directory + 'VID*mp4'):
+    for full_video_path in glob.glob(source_directory + 'IMG*jpg'):
         video_filename = os.path.basename(full_video_path)
-        match = re.match("VID_([0-9]{8})_", video_filename)
+        match = re.match("IMG_([0-9]{8})_", video_filename)
         
         if (match):
             date_time_obj = datetime.strptime(match.group(1), '%Y%m%d')
@@ -34,12 +34,12 @@ if capture_device is 'pixel3A':
             
             filename_parts = video_filename.split('_')
             subparts = filename_parts[2].split('.')
-            newfilename = date_time_obj.strftime('%Y%m%d_%a_') + subparts[0] + '_pixel3A.mp4'
+            newfilename = date_time_obj.strftime('%Y%m%d_%a_') + subparts[0] + '_pixel3A.jpg'
             newfullpath = destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video + '/' + newfilename
             os.rename(full_video_path, newfullpath)
 
 if capture_device is 'iphoneSE':
-    for full_video_path in glob.glob(source_directory + 'IMG_*PNG'):
+    for full_video_path in glob.glob(source_directory + 'IMG_*JPG'):
         video_filename = os.path.basename(full_video_path)
         video_modified_time = datetime.fromtimestamp(os.path.getmtime(full_video_path))
         year_of_video = video_modified_time.strftime('%Y')
@@ -53,7 +53,7 @@ if capture_device is 'iphoneSE':
         if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video):
             os.mkdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video)
 
-        newfilename = video_modified_time.strftime('%Y%m%d_%a_%H%M%S') + '_iphoneSE.PNG'
+        newfilename = video_modified_time.strftime('%Y%m%d_%a_%H%M%S') + '_iphoneSE.JPG'
         newfullpath = destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video + '/' + newfilename
         os.rename(full_video_path, newfullpath)
 
