@@ -8,7 +8,7 @@ import errno
 source_directory = '/Users/sumeetpareek/Movies/source_dump/'
 destination_directory = '/Users/sumeetpareek/Movies/organized_destination/'
 
-capture_device = "iphoneSE"
+capture_device = "pixel3A"
 
 # If the source has mp4 video files, iterate on them and print their year, month and date
 # Default video filename patterns by devices
@@ -20,7 +20,7 @@ if capture_device is 'pixel3A':
         match = re.match("VID_([0-9]{8})_", video_filename)
         
         if (match):
-            date_time_obj = datetime.datetime.strptime(match.group(1), '%Y%m%d')
+            date_time_obj = datetime.strptime(match.group(1), '%Y%m%d')
             year_of_video = date_time_obj.strftime('%Y')
             month_of_video = date_time_obj.strftime('%m') + '-' + date_time_obj.strftime('%B')
             day_of_video = date_time_obj.strftime('%d') + '-' + date_time_obj.strftime('%A')
@@ -32,7 +32,11 @@ if capture_device is 'pixel3A':
             if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video):
                 os.mkdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video)
             
-            os.rename(full_video_path, destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video + '/' + video_filename)
+            filename_parts = video_filename.split('_')
+            subparts = filename_parts[2].split('.')
+            newfilename = date_time_obj.strftime('%Y%m%d_%a_') + subparts[0] + '_pixel3A.mp4'
+            newfullpath = destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video + '/' + newfilename
+            os.rename(full_video_path, newfullpath)
 
 if capture_device is 'iphoneSE':
     for full_video_path in glob.glob(source_directory + 'IMG_*MOV'):
