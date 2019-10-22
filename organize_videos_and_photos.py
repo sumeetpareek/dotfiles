@@ -39,7 +39,7 @@ if capture_device is 'pixel3A':
             os.rename(full_video_path, newfullpath)
 
 if capture_device is 'iphoneSE':
-    for full_video_path in glob.glob(source_directory + 'IMG_*JPG'):
+    for full_video_path in glob.glob(source_directory + 'IMG_*PNG'):
         video_filename = os.path.basename(full_video_path)
         video_modified_time = datetime.fromtimestamp(os.path.getmtime(full_video_path))
         year_of_video = video_modified_time.strftime('%Y')
@@ -53,7 +53,7 @@ if capture_device is 'iphoneSE':
         if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video):
             os.mkdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video)
 
-        newfilename = video_modified_time.strftime('%Y%m%d_%a_%H%M%S') + '_iphoneSE.JPG'
+        newfilename = video_modified_time.strftime('%Y%m%d_%a_%H%M%S') + '_iphoneSE.PNG'
         newfullpath = destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video + '/' + newfilename
         os.rename(full_video_path, newfullpath)
 
