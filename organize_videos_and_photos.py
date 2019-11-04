@@ -5,57 +5,140 @@ from datetime import datetime
 import errno
 
 # Configure full source and destination paths with trailing slash
-source_directory = '/Users/sumeetpareek/Movies/greece-honeymoon/dump_of_pixel3A/'
-destination_directory = '/Users/sumeetpareek/Movies/greece-honeymoon/organized_photos/'
+sourceDirectory = '/Volumes/Sumeets WD 4TB/TODOsource/'
+photos_destination_directory = '/Volumes/Sumeets WD 4TB/TODOorganizedphotos/'
+videos_destination_directory = '/Volumes/Sumeets WD 4TB/TODOorganizedvideos/'
+destination_directory = ''
 
-capture_device = 'pixel3A'
+flagCopy = False
+flagMove = True
+
+# Values you can use for filenameStyle:
+# sequencial (eg: IMG_9083.JPG, IMG_8113.MOV, etc)
+# dateandtime (eg: VID_20190925_191313.mp4, IMG_20190925_191313.jpg, PANO_20190925_191313.jpg, etc)
+# dateandtimeextended (eg: IMG_20190812_183313994.jpg, etc)
+filenameStyle = 'sequencial'
+# Recommended values for itemLabel use the captureDevice and if necessary some other identifier
+# eg: pixel3A, iphoneSE, lauraOppo, mummyLava, papaLava, etc.
+itemLabel = 'iphoneSE'
+
+# ==================================================================================================================================================================
+
+
+# TODO function documentation
+
+def organizeItem(itemFullPath, itemExtension, itemDateTimeObject, itemCaptureTimestamp):
+    # Like 1947
+    year_of_item = itemDateTimeObject.strftime('%Y')
+    # Like 08-August
+    month_of_item = itemDateTimeObject.strftime('%m') + '-' + itemDateTimeObject.strftime('%B')
+    # Like 15-Friday
+    day_of_item = itemDateTimeObject.strftime('%d') + '-' + itemDateTimeObject.strftime('%A')
+
+    # Create organized nested folders like
+    # `DESTINATION/1947/08-August/15-Friday`
+    if not os.path.isdir(destination_directory + year_of_item):
+        os.mkdir(destination_directory + year_of_item)
+    if not os.path.isdir(destination_directory + year_of_item + '/' + month_of_item):
+        os.mkdir(destination_directory + year_of_item + '/' + month_of_item)
+    if not os.path.isdir(destination_directory + year_of_item + '/' + month_of_item + '/' + day_of_item):
+        os.mkdir(destination_directory + year_of_item + '/' + month_of_item + '/' + day_of_item)
+    
+    # newFilename will be of the format: 
+    # `itemDate_itemDay_itemTime_itemLabel.itemExtension`
+    # eg: TODO
+    newFilename = itemDateTimeObject.strftime('%Y%m%d_%a_') + itemCaptureTimestamp + '_' + itemLabel + '.' + itemExtension
+    newFullPath = destination_directory + year_of_item + '/' + month_of_item + '/' + day_of_item + '/' + newFilename
+    if flagMove and (not flagCopy):
+        os.rename(itemFullPath, newFullPath)
+        # When a dump is organized it is difficult to tell which months and dates the files got organized against.
+        # This printing here is a rudimentary log that helps us know that.
+        print 'file [[' + itemFilename +']] was moved to ' + newFullPath
+    else:
+        print "TODO the copy work should go here"
+
+
+# ==================================================================================================================================================================
+
 
 # If the source has mp4 video files, iterate on them and print their year, month and date
 # Default video filename patterns by devices
 # Android Pixel 3a = VID_20191013_113715.mp4
 # iOS iPhone SE = IMG_9198.MOV
-if capture_device is 'pixel3A':
-    for full_video_path in glob.glob(source_directory + 'IMG*jpg'):
-        video_filename = os.path.basename(full_video_path)
-        match = re.match("IMG_([0-9]{8})_", video_filename)
+if filenameStyle is 'dateandtime':
+    for itemFullPath in glob.glob(sourceDirectory + 'IMG*jpg'):
+        itemExtension = 'jpg'
+        destination_directory = photos_destination_directory
+        
+        itemFilename = os.path.basename(itemFullPath)
+        match = re.match("IMG_([0-9]{8})_([0-9]{6}).jpg", itemFilename)
         
         if (match):
-            date_time_obj = datetime.strptime(match.group(1), '%Y%m%d')
-            year_of_video = date_time_obj.strftime('%Y')
-            month_of_video = date_time_obj.strftime('%m') + '-' + date_time_obj.strftime('%B')
-            day_of_video = date_time_obj.strftime('%d') + '-' + date_time_obj.strftime('%A')
-            
-            if not os.path.isdir(destination_directory + year_of_video):
-                os.mkdir(destination_directory + year_of_video)
-            if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video):
-                os.mkdir(destination_directory + year_of_video + '/' + month_of_video)
-            if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video):
-                os.mkdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video)
-            
-            filename_parts = video_filename.split('_')
-            subparts = filename_parts[2].split('.')
-            newfilename = date_time_obj.strftime('%Y%m%d_%a_') + subparts[0] + '_pixel3A.jpg'
-            newfullpath = destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video + '/' + newfilename
-            os.rename(full_video_path, newfullpath)
+            itemDateTimeObject = datetime.strptime(match.group(1), '%Y%m%d')
+            itemCaptureTimestamp = match.group(2)
+            organizeItem(itemFullPath, itemExtension, itemDateTimeObject, itemCaptureTimestamp)
 
-if capture_device is 'iphoneSE':
-    for full_video_path in glob.glob(source_directory + 'IMG_*JPG'):
-        video_filename = os.path.basename(full_video_path)
-        video_modified_time = datetime.fromtimestamp(os.path.getmtime(full_video_path))
-        year_of_video = video_modified_time.strftime('%Y')
-        month_of_video = video_modified_time.strftime('%m') + '-' + video_modified_time.strftime('%B')
-        day_of_video = video_modified_time.strftime('%d') + '-' + video_modified_time.strftime('%A')
+    for itemFullPath in glob.glob(sourceDirectory + 'VID*mp4'):
+        itemExtension = 'mp4'
+        destination_directory = videos_destination_directory
+        
+        itemFilename = os.path.basename(itemFullPath)
+        match = re.match("VID_([0-9]{8})_([0-9]{6}).mp4", itemFilename)
+        
+        if (match):
+            itemDateTimeObject = datetime.strptime(match.group(1), '%Y%m%d')
+            itemCaptureTimestamp = match.group(2)
+            organizeItem(itemFullPath, itemExtension, itemDateTimeObject, itemCaptureTimestamp)
 
-        if not os.path.isdir(destination_directory + year_of_video):
-            os.mkdir(destination_directory + year_of_video)
-        if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video):
-            os.mkdir(destination_directory + year_of_video + '/' + month_of_video)
-        if not os.path.isdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video):
-            os.mkdir(destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video)
+if filenameStyle is 'sequencial':
+    for itemFullPath in glob.glob(sourceDirectory + 'IMG*JPG'):
+        itemExtension = 'jpg'
+        destination_directory = photos_destination_directory
+        
+        itemFilename = os.path.basename(itemFullPath)
+        match = re.match("IMG_([0-9]{1,5}).JPG", itemFilename)
+        
+        if (match):
+            itemDateTimeObject = datetime.fromtimestamp(os.path.getmtime(itemFullPath))
+            itemCaptureTimestamp = itemDateTimeObject.strftime('%H%M%S')
+            organizeItem(itemFullPath, itemExtension, itemDateTimeObject, itemCaptureTimestamp)
 
-        newfilename = video_modified_time.strftime('%Y%m%d_%a_%H%M%S') + '_iphoneSE.JPG'
-        newfullpath = destination_directory + year_of_video + '/' + month_of_video + '/' + day_of_video + '/' + newfilename
-        os.rename(full_video_path, newfullpath)
+    for itemFullPath in glob.glob(sourceDirectory + 'IMG*MOV'):
+        itemExtension = 'MOV'
+        destination_directory = videos_destination_directory
+        
+        itemFilename = os.path.basename(itemFullPath)
+        match = re.match("IMG_([0-9]{1,5}).MOV", itemFilename)
+        
+        if (match):
+            itemDateTimeObject = datetime.fromtimestamp(os.path.getmtime(itemFullPath))
+            itemCaptureTimestamp = itemDateTimeObject.strftime('%H%M%S')
+            organizeItem(itemFullPath, itemExtension, itemDateTimeObject, itemCaptureTimestamp)
+
+if filenameStyle is 'dateandtimeextended':
+    for itemFullPath in glob.glob(sourceDirectory + 'IMG*jpg'):
+        itemExtension = 'jpg'
+        destination_directory = photos_destination_directory
+        
+        itemFilename = os.path.basename(itemFullPath)
+        match = re.match("IMG_([0-9]{8})_([0-9]{6})([0-9]{3}).jpg", itemFilename)
+        
+        if (match):
+            itemDateTimeObject = datetime.strptime(match.group(1), '%Y%m%d')
+            itemCaptureTimestamp = match.group(2)
+            organizeItem(itemFullPath, itemExtension, itemDateTimeObject, itemCaptureTimestamp)
+
+    for itemFullPath in glob.glob(sourceDirectory + 'VID*mp4'):
+        itemExtension = 'mp4'
+        destination_directory = videos_destination_directory
+        
+        itemFilename = os.path.basename(itemFullPath)
+        match = re.match("VID_([0-9]{8})_([0-9]{6})([0-9]{3}).mp4", itemFilename)
+        
+        if (match):
+            itemDateTimeObject = datetime.strptime(match.group(1), '%Y%m%d')
+            itemCaptureTimestamp = match.group(2)
+            organizeItem(itemFullPath, itemExtension, itemDateTimeObject, itemCaptureTimestamp)
 
 
 # HOW TO CREATE AN EMPTY FILE
@@ -65,13 +148,4 @@ if capture_device is 'iphoneSE':
 # except OSError as exc:
 #     if exc.errno != errno.EEXIST:
 #         raise   
-        
 
-# for full_video_path in glob.glob(source_directory + 'IMG*MOV'):
-
-# date_time_str = 'Jun 28 2018  7:40AM'
-# date_time_obj = datetime.datetime.strptime(date_time_str, '%b %d %Y %I:%M%p')
-
-# print('Date:', date_time_obj.date())
-# print('Time:', date_time_obj.time())
-# print('Date-time:', date_time_obj)
